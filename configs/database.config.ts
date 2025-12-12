@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-export const sequelize = new Sequelize('warehouse', 'root', 'thanhduy140', {
+export const sequelize = new Sequelize('warehouse', String(process.env.DATABASE_NAME), String(process.env.DATABASE_PASSWORD), {
   host: 'localhost',
   dialect: 'mysql',
   logging: false
