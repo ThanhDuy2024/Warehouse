@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Admin } from "../models/admin.model";
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 export const register = async (req: Request, res: Response) => {
   try {
     const email = await Admin.findOne({
@@ -30,6 +31,60 @@ export const register = async (req: Request, res: Response) => {
     res.status(400).json({
       code: "error",
       message: "Đăng ký thất bại!"
+    })
+  }
+};
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    
+    const account = await Admin.findOne({
+      where: {
+        email: email,
+      }
+    });
+
+    if(!account) {
+      return res.status(404).json({
+        code: "error",
+        message: "Email hoặc mật khẩu không đúng!"
+      })
+    };
+
+    const data = account.dataValues;
+
+    const checkPassword = bcrypt.compareSync(String(password), data.password);
+
+    if(!checkPassword) {
+      return res.status(404).json({
+        code: "error",
+        message: "Email hoặc mật khẩu không đúng!"
+      })
+    };
+
+    const token = jwt.sign({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email
+    }, String(process.env.JWT_SECRET));
+
+    res.cookie("adminToken", token, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      secure: String(process.env.ENVIROIMENT) == "dev" ? false : true,
+      sameSite: "lax",
+    });
+
+    res.json({
+      code: "success",
+      message: "Đăng nhập thành công"
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      code: "error",
+      message: "Đăng nhập thất bại"
     })
   }
 }

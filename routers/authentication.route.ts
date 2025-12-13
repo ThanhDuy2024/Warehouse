@@ -3,4 +3,6 @@ import * as authenticationController from "../controllers/authentication.control
 const router = Router();
 
 router.post("/register", authenticationController.register)
+
+router.post("/login", authenticationController.login);
 export default router;
