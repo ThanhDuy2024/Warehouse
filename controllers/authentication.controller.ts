@@ -88,3 +88,18 @@ export const login = async (req: Request, res: Response) => {
     })
   }
 }
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("adminToken")
+    res.json({
+      code: "success",
+      message: "Đăng xuất thành công"
+    })
+  } catch (error) {
+    res.status(400).json({
+      code: "error",
+      message: "Đăng xuất thất bại"
+    })
+  }
+}
