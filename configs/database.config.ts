@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+import { Sequelize } from "sequelize"
 
 export const sequelize = new Sequelize('warehouse', String(process.env.DATABASE_NAME), String(process.env.DATABASE_PASSWORD), {
   host: 'localhost',
