@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Admin } from "../models/admin.model";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import { admin } from "../interfaces/admin.middlewares";
 export const register = async (req: Request, res: Response) => {
   try {
     const email = await Admin.findOne({
@@ -100,6 +101,20 @@ export const logout = async (req: Request, res: Response) => {
     res.status(400).json({
       code: "error",
       message: "Đăng xuất thất bại"
+    })
+  }
+}
+
+export const getProfile = async (req: admin, res: Response) => {
+  try {
+    res.json({
+      code: "success",
+      data: req.admin
+    })
+  } catch (error) {
+    res.status(400).json({
+      code: "error",
+      message: "Loi phan get profile"
     })
   }
 }

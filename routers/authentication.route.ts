@@ -8,4 +8,6 @@ router.post("/register", authenticationController.register)
 router.post("/login", authenticationController.login);
 
 router.get("/logout", middleware, authenticationController.logout);
+
+router.get("/profile", middleware, authenticationController.getProfile);
 export default router;
