@@ -24,5 +24,3 @@ export const Categories = sequelize.define("Categories", {
         allowNull: false
     }
 })
-
-sequelize.sync({ alter: true });

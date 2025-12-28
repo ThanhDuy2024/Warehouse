@@ -28,5 +28,3 @@ export const Admin = sequelize.define("Users", {
 }, {
   timestamps: true
 })
-
-sequelize.sync({ alter: true });
