@@ -34,5 +34,3 @@ export const Warehouse = sequelize.define("Warehouse", {
 }, {
     timestamps: true
 })
-
-sequelize.sync({ alter: true });

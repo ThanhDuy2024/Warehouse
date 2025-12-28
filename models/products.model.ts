@@ -36,5 +36,3 @@ export const Products = sequelize.define("Products", {
         allowNull: false
     }
 })
-
-sequelize.sync({ alter: true });

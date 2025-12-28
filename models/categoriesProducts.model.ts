@@ -14,5 +14,3 @@ export const CategoriesProducts = sequelize.define("CategoriesProducts", {
         type: DataTypes.INTEGER,
     },
 })
-
-sequelize.sync({ alter: true });
