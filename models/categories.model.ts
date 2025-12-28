@@ -22,5 +22,9 @@ export const Categories = sequelize.define("Categories", {
     updatedBy: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    slug: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })

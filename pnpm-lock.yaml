@@ -68,6 +68,9 @@ importers:
       sequelize:
         specifier: ^6.37.7
         version: 6.37.7(mysql2@3.15.3)
+      slugify:
+        specifier: ^1.6.6
+        version: 1.6.6
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.1)(typescript@5.9.3)
@@ -740,6 +743,10 @@ packages:
   simple-update-notifier@2.0.0:
     resolution: {integrity: sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==}
     engines: {node: '>=10'}
+
+  slugify@1.6.6:
+    resolution: {integrity: sha512-h+z7HKHYXj6wJU+AnS/+IH8Uh9fdcX1Lrhg1/VMdf9PwoBQXFcXiAdsy2tSK0P6gKwJLXp02r90ahUCqHk9rrw==}
+    engines: {node: '>=8.0.0'}
 
   sqlstring@2.3.3:
     resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
@@ -1540,6 +1547,8 @@ snapshots:
   simple-update-notifier@2.0.0:
     dependencies:
       semver: 7.7.3
+
+  slugify@1.6.6: {}
 
   sqlstring@2.3.3: {}
 
