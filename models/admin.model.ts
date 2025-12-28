@@ -1,17 +1,13 @@
 import { DataTypes} from "sequelize";
 import { sequelize } from "../configs/database.config";
 
-export const Admin = sequelize.define("Admin", {
-  adminId: {
+export const Admin = sequelize.define("Users", {
+  id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true 
   },
-  firstName: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  lastName: {
+  userName: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -24,12 +20,9 @@ export const Admin = sequelize.define("Admin", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  image: {
-    type: DataTypes.STRING,
-  },
-  deleted: {
+  isActive: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false
+    defaultValue: true
   }
   
 }, {
