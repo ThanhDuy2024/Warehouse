@@ -23,8 +23,11 @@ export const Admin = sequelize.define("Users", {
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  role: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
-  
 }, {
   timestamps: true
 })

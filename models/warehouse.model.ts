@@ -30,6 +30,10 @@ export const Warehouse = sequelize.define("Warehouse", {
     updatedBy: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    slug: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true

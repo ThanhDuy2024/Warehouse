@@ -34,5 +34,9 @@ export const Products = sequelize.define("Products", {
     updatedBy: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    slug: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })
