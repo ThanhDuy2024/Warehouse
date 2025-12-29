@@ -76,3 +76,43 @@ export const getCategory = async (req: admin, res: Response) => {
         })
     }
 }
+
+export const updateCategory = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body
+
+        req.body.slug = slugify(name, {
+            lower: true
+        });
+
+        const data = await Categories.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if(data == null) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay danh muc"
+            })
+        };
+
+        req.body.updatedBy = req.admin.id
+
+        await data.update(req.body);
+
+        data.save();
+
+        res.json({
+            code: "success",
+            message: "Cap nhat danh muc thanh cong"
+        })
+    } catch (error) {
+        res.status(400).json({
+            code: "error",
+            message: "Cap nhat danh muc that bai"
+        })
+    }
+}
