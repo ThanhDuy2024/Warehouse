@@ -10,14 +10,14 @@ import moment from "moment";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
-        if(req.file) {
+        if (req.file) {
             req.body.image = req.file.path;
         } else {
             delete req.body.image
         }
-        
+
         let categoryId = null
-        if(req.body.categoryId) {
+        if (req.body.categoryId) {
             categoryId = JSON.parse(req.body.categoryId);
             delete req.body.categoryId
         }
@@ -34,17 +34,17 @@ export const createProduct = async (req: admin, res: Response) => {
             }
         })
 
-        if(datacheckWarehouse == null) {
+        if (datacheckWarehouse == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay warehouse"
             })
         }
-        
+
         const data = await Products.create(req.body);
 
         let flagCheckCategory = false
-        if(categoryId !== null) {
+        if (categoryId !== null) {
             for (const item of categoryId) {
                 const checkCategory = await Categories.findOne({
                     where: {
@@ -52,7 +52,7 @@ export const createProduct = async (req: admin, res: Response) => {
                     }
                 });
 
-                if(checkCategory == null) {
+                if (checkCategory == null) {
                     await data.destroy();
                     flagCheckCategory = true
                     return res.status(404).json({
@@ -63,7 +63,7 @@ export const createProduct = async (req: admin, res: Response) => {
             }
         }
 
-        if(flagCheckCategory == false) {
+        if (flagCheckCategory == false) {
             for (const item of categoryId) {
                 await CategoriesProducts.create({
                     productId: data.dataValues.id,
@@ -89,8 +89,8 @@ export const createProduct = async (req: admin, res: Response) => {
 export const getProduct = async (req: admin, res: Response) => {
     try {
 
-        Warehouse.hasMany(Products, { foreignKey: "warehouseId"});
-        Products.belongsTo(Warehouse, { foreignKey: "warehouseId"});
+        Warehouse.hasMany(Products, { foreignKey: "warehouseId" });
+        Products.belongsTo(Warehouse, { foreignKey: "warehouseId" });
 
         const productList = await Products.findAll({
             include: [{
@@ -98,9 +98,12 @@ export const getProduct = async (req: admin, res: Response) => {
                 attributes: ['id', 'name'],
                 required: true //inner join
             }],
+            order: [
+                ['id', 'asc']
+            ]
         });
 
-        const data:any = []
+        const data: any = []
         for (const item of productList) {
             const rawData = {
                 id: item.dataValues.id,
@@ -123,7 +126,7 @@ export const getProduct = async (req: admin, res: Response) => {
                 }
             });
 
-            if(createdByAdmin !== null) {
+            if (createdByAdmin !== null) {
                 rawData.createdBy = createdByAdmin.dataValues.userName
             }
 
@@ -133,7 +136,7 @@ export const getProduct = async (req: admin, res: Response) => {
                 }
             });
 
-            if(updatedByAdmin !== null) {
+            if (updatedByAdmin !== null) {
                 rawData.updatedBy = updatedByAdmin.dataValues.userName
             }
 
@@ -150,7 +153,7 @@ export const getProduct = async (req: admin, res: Response) => {
                 }
             })
 
-            if(getIdCategory !== null) {
+            if (getIdCategory !== null) {
                 for (const cId of getIdCategory) {
                     const queryCategory = await Categories.findOne({
                         where: {
@@ -158,7 +161,7 @@ export const getProduct = async (req: admin, res: Response) => {
                         }
                     });
 
-                    if(queryCategory !== null) {
+                    if (queryCategory !== null) {
                         const dataCategory = {
                             categoryId: queryCategory.dataValues.id,
                             categoryName: queryCategory.dataValues.name
@@ -179,6 +182,104 @@ export const getProduct = async (req: admin, res: Response) => {
         res.status(404).json({
             code: "error",
             message: "Loi lay danh sach san pham"
+        })
+    }
+}
+
+export const updateProduct = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const product = await Products.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if(product == null) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay san pham"
+            })
+        }
+
+        if (req.file) {
+            req.body.image = req.file.path;
+        } else {
+            delete req.body.image;
+        };
+
+        const checkWarehouseId = await Warehouse.findOne({
+            where: {
+                id: req.body.warehouseId,
+            }
+        });
+
+        if (checkWarehouseId == null) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay warehouse"
+            })
+        };
+
+        let categoryId = null
+        if (req.body.categoryId) {
+            categoryId = JSON.parse(req.body.categoryId);
+            delete req.body.categoryId
+        };
+
+        let flagCheck = false
+        for (const item of categoryId) {
+            const checkCategoryId = await Categories.findOne({
+                where: {
+                    id: item
+                }
+            });
+
+            if (checkCategoryId == null) {
+                flagCheck = true
+                break;
+            }
+        };
+
+        if (flagCheck == true) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay category"
+            })
+        };
+
+        await product.update(req.body);
+        product.save();
+
+        const findCategoryAndProduct = await CategoriesProducts.findAll({
+            where: {
+                productId: id
+            }
+        });
+
+        if(findCategoryAndProduct !== null) {
+            for (const item of findCategoryAndProduct) {
+                item.destroy();
+            }
+        }
+
+        for (const item of categoryId) {
+            await CategoriesProducts.create({
+                productId: id,
+                categoryId: item
+            });
+        }
+
+        res.json({
+            code: "success",
+            message: "Cap nhat san pham thanh cong"
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            code: "error",
+            message: "Loi cap nhat san pham"
         })
     }
 }
