@@ -7,6 +7,7 @@ import { Categories } from "../models/categories.model";
 import { Warehouse } from "../models/warehouse.model";
 import { Admin } from "../models/admin.model";
 import moment from "moment";
+import { where } from "sequelize";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
@@ -249,6 +250,8 @@ export const updateProduct = async (req: admin, res: Response) => {
             })
         };
 
+        req.body.updatedBy = req.admin.id;
+
         await product.update(req.body);
         product.save();
 
@@ -280,6 +283,41 @@ export const updateProduct = async (req: admin, res: Response) => {
         res.status(404).json({
             code: "error",
             message: "Loi cap nhat san pham"
+        })
+    }
+}
+
+export const lockProduct = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        const getProduct = await Products.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if(getProduct == null) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay san pham"
+            })
+        };
+
+        await getProduct.update({
+            isActive: !isActive
+        });
+
+        getProduct.save();
+        res.json({
+            code: "success",
+            message: "Lock san pham thanh cong"
+        })
+    } catch (error) {
+        res.status(400).json({
+            code: "error",
+            message: "Lock san pham loi"
         })
     }
 }
