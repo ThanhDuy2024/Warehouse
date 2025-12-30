@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createProduct } from "../controllers/products.controller";
+import { createProduct, getProduct } from "../controllers/products.controller";
 import { storage } from "../helpers/cloudinary.helper";
 import multer from "multer";
 const router = Router();
@@ -9,5 +9,7 @@ const upload = multer({
 })
 
 router.post("/create", upload.single("image"), createProduct);
+
+router.get("/list", getProduct);
 
 export default router;

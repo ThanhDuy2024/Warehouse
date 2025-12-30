@@ -5,6 +5,8 @@ import slugify from "slugify";
 import { CategoriesProducts } from "../models/categoriesProducts.model";
 import { Categories } from "../models/categories.model";
 import { Warehouse } from "../models/warehouse.model";
+import { Admin } from "../models/admin.model";
+import moment from "moment";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
@@ -80,6 +82,103 @@ export const createProduct = async (req: admin, res: Response) => {
         res.status(400).json({
             code: "error",
             message: "Tao san pham that bai"
+        })
+    }
+}
+
+export const getProduct = async (req: admin, res: Response) => {
+    try {
+
+        Warehouse.hasMany(Products, { foreignKey: "warehouseId"});
+        Products.belongsTo(Warehouse, { foreignKey: "warehouseId"});
+
+        const productList = await Products.findAll({
+            include: [{
+                model: Warehouse,
+                attributes: ['id', 'name'],
+                required: true //inner join
+            }],
+        });
+
+        const data:any = []
+        for (const item of productList) {
+            const rawData = {
+                id: item.dataValues.id,
+                name: item.dataValues.name,
+                image: item.dataValues.image,
+                warehouseId: item.dataValues.warehouseId,
+                warehouseName: item.dataValues.Warehouse.dataValues.name,
+                quantity: item.dataValues.quantity,
+                isActive: item.dataValues.isActive,
+                categoryIds: [],
+                createdBy: "",
+                updatedBy: "",
+                createdAt: "",
+                updatedAt: ""
+            }
+
+            const createdByAdmin = await Admin.findOne({
+                where: {
+                    id: item.dataValues.createdBy
+                }
+            });
+
+            if(createdByAdmin !== null) {
+                rawData.createdBy = createdByAdmin.dataValues.userName
+            }
+
+            const updatedByAdmin = await Admin.findOne({
+                where: {
+                    id: item.dataValues.updatedBy
+                }
+            });
+
+            if(updatedByAdmin !== null) {
+                rawData.updatedBy = updatedByAdmin.dataValues.userName
+            }
+
+            rawData.createdAt = moment(item.dataValues.createdAt).format("HH:mm DD/MM/YYYY");
+            rawData.updatedAt = moment(item.dataValues.updatedAt).format("HH:mm DD/MM/YYYY");
+
+            data.push(rawData);
+        };
+
+        for (const item of data) {
+            const getIdCategory = await CategoriesProducts.findAll({
+                where: {
+                    productId: item.id
+                }
+            })
+
+            if(getIdCategory !== null) {
+                for (const cId of getIdCategory) {
+                    const queryCategory = await Categories.findOne({
+                        where: {
+                            id: cId.dataValues.categoryId
+                        }
+                    });
+
+                    if(queryCategory !== null) {
+                        const dataCategory = {
+                            categoryId: queryCategory.dataValues.id,
+                            categoryName: queryCategory.dataValues.name
+                        }
+                        item.categoryIds.push(dataCategory);
+                    }
+                }
+            }
+        }
+
+
+        res.json({
+            code: "success",
+            data: data
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(404).json({
+            code: "error",
+            message: "Loi lay danh sach san pham"
         })
     }
 }
