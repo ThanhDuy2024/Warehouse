@@ -99,20 +99,28 @@ export const getProduct = async (req: admin, res: Response) => {
                 required: true //inner join
             }],
             order: [
-                ['id', 'asc']
-            ]
+            ],
+            where: {
+
+            }
         }
 
+        find.order.push(['id', 'asc'])
+
+        //find product
         if(req.query.search && String(req.query.search).trim() !== "") {
             const keyword = slugify(String(req.query.search), {
                 lower: true
             });
 
-            find.where = {
-                slug: {
-                    [Op.regexp]: keyword
-                }
+            find.where.slug = {
+                [Op.regexp]: keyword
             }
+        };
+
+        //sort quantity asc, desc
+        if(req.query.quantity) {
+            find.order[0] = ['quantity', req.query.quantity]
         }
 
         const productList = await Products.findAll(find);
