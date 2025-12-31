@@ -7,7 +7,7 @@ import { Categories } from "../models/categories.model";
 import { Warehouse } from "../models/warehouse.model";
 import { Admin } from "../models/admin.model";
 import moment from "moment";
-import { where } from "sequelize";
+import { Op } from "sequelize";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
@@ -89,11 +89,10 @@ export const createProduct = async (req: admin, res: Response) => {
 
 export const getProduct = async (req: admin, res: Response) => {
     try {
-
         Warehouse.hasMany(Products, { foreignKey: "warehouseId" });
         Products.belongsTo(Warehouse, { foreignKey: "warehouseId" });
 
-        const productList = await Products.findAll({
+        const find:any= {
             include: [{
                 model: Warehouse,
                 attributes: ['id', 'name'],
@@ -102,7 +101,21 @@ export const getProduct = async (req: admin, res: Response) => {
             order: [
                 ['id', 'asc']
             ]
-        });
+        }
+
+        if(req.query.search && String(req.query.search).trim() !== "") {
+            const keyword = slugify(String(req.query.search), {
+                lower: true
+            });
+
+            find.where = {
+                slug: {
+                    [Op.regexp]: keyword
+                }
+            }
+        }
+
+        const productList = await Products.findAll(find);
 
         const data: any = []
         for (const item of productList) {
@@ -197,7 +210,7 @@ export const updateProduct = async (req: admin, res: Response) => {
             }
         });
 
-        if(product == null) {
+        if (product == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay san pham"
@@ -251,6 +264,9 @@ export const updateProduct = async (req: admin, res: Response) => {
         };
 
         req.body.updatedBy = req.admin.id;
+        req.body.slug = slugify(req.body.name, {
+            lower: true
+        });
 
         await product.update(req.body);
         product.save();
@@ -261,7 +277,7 @@ export const updateProduct = async (req: admin, res: Response) => {
             }
         });
 
-        if(findCategoryAndProduct !== null) {
+        if (findCategoryAndProduct !== null) {
             for (const item of findCategoryAndProduct) {
                 item.destroy();
             }
@@ -298,7 +314,7 @@ export const lockProduct = async (req: admin, res: Response) => {
             }
         });
 
-        if(getProduct == null) {
+        if (getProduct == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay san pham"
