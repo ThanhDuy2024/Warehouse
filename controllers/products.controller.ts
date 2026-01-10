@@ -123,6 +123,13 @@ export const getProduct = async (req: admin, res: Response) => {
             find.order[0] = ['quantity', req.query.quantity]
         }
 
+        //filter isActive
+        if(req.query.isActive == "true") {
+            find.where.isActive = true
+        } else if(req.query.isActive == "false") {
+            find.where.isActive = false
+        }
+
         const productList = await Products.findAll(find);
 
         const data: any = []

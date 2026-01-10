@@ -4,6 +4,7 @@ import slugify from "slugify";
 import { Categories } from "../models/categories.model";
 import { Admin } from "../models/admin.model";
 import moment from "moment";
+import { Op } from "sequelize";
 
 export const createCategory = async (req: admin, res: Response) => {
     try {
@@ -30,9 +31,30 @@ export const createCategory = async (req: admin, res: Response) => {
 
 export const getCategory = async (req: admin, res: Response) => {
     try {
-        const categories = await Categories.findAll();
+        const find: any = {
+            where: {}
+        }
 
-        const data:Array<object> = []
+        //search item
+        if (req.query.search && String(req.query.search).trim() !== "") {
+            const keyword = slugify(String(req.query.search), {
+                lower: true
+            });
+            find.where.slug = {
+                [Op.regexp]: keyword
+            }
+        };
+
+        //filter isActive
+        if (req.query.isActive == "true") {
+            find.where.isActive = true
+        } else if (req.query.isActive == "false") {
+            find.where.isActive = false
+        }
+        
+        const categories = await Categories.findAll(find);
+
+        const data: Array<object> = []
         for (const item of categories) {
             const rawData = {
                 id: item.dataValues.id,
@@ -93,7 +115,7 @@ export const updateCategory = async (req: admin, res: Response) => {
             }
         });
 
-        if(data == null) {
+        if (data == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay danh muc"
@@ -122,7 +144,7 @@ export const lockCategory = async (req: admin, res: Response) => {
     try {
         const { id } = req.params;
         const { isActive } = req.body;
-        
+
         const data = await Categories.findOne({
             where: {
                 id: id,
@@ -130,7 +152,7 @@ export const lockCategory = async (req: admin, res: Response) => {
             }
         });
 
-        if(data == null) {
+        if (data == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay danh muc"

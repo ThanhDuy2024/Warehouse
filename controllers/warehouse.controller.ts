@@ -4,6 +4,7 @@ import { Warehouse } from "../models/warehouse.model";
 import moment from "moment";
 import { Admin } from "../models/admin.model";
 import slugify from "slugify";
+import { Op } from "sequelize";
 
 export const createWarehouse = async (req: admin, res: Response) => {
     try {
@@ -37,7 +38,28 @@ export const createWarehouse = async (req: admin, res: Response) => {
 
 export const getWarehouse = async (req: admin, res: Response) => {
     try {
-        const warehouseList = await Warehouse.findAll();
+        const find:any = {
+            where: {}
+        }
+
+        //search item
+        if(req.query.search && String(req.query.search).trim() !== "") {
+            const keyword = slugify(String(req.query.search), {
+                lower: true
+            });
+            find.where.slug = {
+                [Op.regexp]: keyword
+            }
+        };
+
+        //filter isActive
+        if(req.query.isActive == "true") {
+            find.where.isActive = true
+        } else if(req.query.isActive == "false") {
+            find.where.isActive = false
+        }
+
+        const warehouseList = await Warehouse.findAll(find);
 
         const data:Array<object> = []
 
