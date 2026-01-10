@@ -8,6 +8,7 @@ import { Warehouse } from "../models/warehouse.model";
 import { Admin } from "../models/admin.model";
 import moment from "moment";
 import { Op } from "sequelize";
+import { limit } from "../configs/variable.config";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
@@ -92,6 +93,15 @@ export const getProduct = async (req: admin, res: Response) => {
         Warehouse.hasMany(Products, { foreignKey: "warehouseId" });
         Products.belongsTo(Warehouse, { foreignKey: "warehouseId" });
 
+        let offset = 0
+        const count = await Products.count();
+        const pageQuantity = Math.ceil(Number(count) / limit);
+        const { page } = req.query
+        if(page && Number(page) > 1 && Number(page) <= pageQuantity) {
+            offset = (Number(page) - 1) * limit
+        }
+
+
         const find:any= {
             include: [{
                 model: Warehouse,
@@ -102,7 +112,9 @@ export const getProduct = async (req: admin, res: Response) => {
             ],
             where: {
 
-            }
+            },
+            limit: limit,
+            offset: offset
         }
 
         find.order.push(['id', 'asc'])
@@ -134,7 +146,6 @@ export const getProduct = async (req: admin, res: Response) => {
         if(req.query.warehouseId) {
             find.where.warehouseId = Number(req.query.warehouseId);
         }
-
         const productList = await Products.findAll(find);
 
         const data: any = []
@@ -219,14 +230,16 @@ export const getProduct = async (req: admin, res: Response) => {
 
             return res.json({
                 code: "success",
-                data: newData
+                data: newData,
+                pageQuantity: pageQuantity,
             })
         }
 
 
         res.json({
             code: "success",
-            data: data
+            data: data,
+            pageQuantity: pageQuantity
         })
     } catch (error) {
         console.log(error)
