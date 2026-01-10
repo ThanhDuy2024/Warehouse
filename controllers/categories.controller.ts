@@ -5,6 +5,7 @@ import { Categories } from "../models/categories.model";
 import { Admin } from "../models/admin.model";
 import moment from "moment";
 import { Op } from "sequelize";
+import { limit } from "../configs/variable.config";
 
 export const createCategory = async (req: admin, res: Response) => {
     try {
@@ -31,8 +32,18 @@ export const createCategory = async (req: admin, res: Response) => {
 
 export const getCategory = async (req: admin, res: Response) => {
     try {
+        let offset = 0
+        const count = await Categories.count();
+        const pageQuantity = Math.ceil(Number(count) / limit);
+        const { page } = req.query
+        if (page && Number(page) > 1 && Number(page) <= pageQuantity) {
+            offset = (Number(page) - 1) * limit
+        };
+
         const find: any = {
-            where: {}
+            where: {},
+            offset: offset,
+            limit: limit
         }
 
         //search item
@@ -51,7 +62,7 @@ export const getCategory = async (req: admin, res: Response) => {
         } else if (req.query.isActive == "false") {
             find.where.isActive = false
         }
-        
+
         const categories = await Categories.findAll(find);
 
         const data: Array<object> = []
@@ -90,7 +101,8 @@ export const getCategory = async (req: admin, res: Response) => {
         }
         res.json({
             code: "success",
-            data: data
+            data: data,
+            pageQuantity: pageQuantity
         })
     } catch (error) {
         res.status(400).json({

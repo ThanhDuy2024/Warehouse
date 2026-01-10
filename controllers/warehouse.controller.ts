@@ -5,10 +5,11 @@ import moment from "moment";
 import { Admin } from "../models/admin.model";
 import slugify from "slugify";
 import { Op } from "sequelize";
+import { limit } from "../configs/variable.config";
 
 export const createWarehouse = async (req: admin, res: Response) => {
     try {
-        if(req.file) {
+        if (req.file) {
             req.body.image = req.file.path
         } else {
             delete req.body.image
@@ -38,12 +39,22 @@ export const createWarehouse = async (req: admin, res: Response) => {
 
 export const getWarehouse = async (req: admin, res: Response) => {
     try {
-        const find:any = {
-            where: {}
+        let offset = 0
+        const count = await Warehouse.count();
+        const pageQuantity = Math.ceil(Number(count) / limit);
+        const { page } = req.query
+        if (page && Number(page) > 1 && Number(page) <= pageQuantity) {
+            offset = (Number(page) - 1) * limit
+        }
+
+        const find: any = {
+            where: {},
+            offset: offset,
+            limit: limit
         }
 
         //search item
-        if(req.query.search && String(req.query.search).trim() !== "") {
+        if (req.query.search && String(req.query.search).trim() !== "") {
             const keyword = slugify(String(req.query.search), {
                 lower: true
             });
@@ -53,15 +64,15 @@ export const getWarehouse = async (req: admin, res: Response) => {
         };
 
         //filter isActive
-        if(req.query.isActive == "true") {
+        if (req.query.isActive == "true") {
             find.where.isActive = true
-        } else if(req.query.isActive == "false") {
+        } else if (req.query.isActive == "false") {
             find.where.isActive = false
         }
 
         const warehouseList = await Warehouse.findAll(find);
 
-        const data:Array<object> = []
+        const data: Array<object> = []
 
         for (const item of warehouseList) {
             const rawData = {
@@ -80,7 +91,7 @@ export const getWarehouse = async (req: admin, res: Response) => {
             const updatedAtFormat = moment(item.dataValues.updatedAt).format("HH:mm - DD/MM/YYYY")
             rawData.createdAt = createdAtFormat;
             rawData.updatedAt = updatedAtFormat;
-            
+
             const userCreated = await Admin.findOne({
                 attributes: ['userName'],
                 where: {
@@ -102,10 +113,11 @@ export const getWarehouse = async (req: admin, res: Response) => {
 
             data.push(rawData);
         }
-        
+
         res.json({
             code: "success",
-            data: data
+            data: data,
+            pageQuantity: pageQuantity
         })
     } catch (error) {
         console.log(error)
@@ -120,17 +132,17 @@ export const updateWarehouse = async (req: admin, res: Response) => {
     try {
         const { id } = req.params;
 
-        if(req.file) {
+        if (req.file) {
             req.body.image = req.file.path
         } else {
             delete req.body.image
         }
 
         const dataCheck = await Warehouse.findOne({
-            where: { id: id}
+            where: { id: id }
         })
 
-        if(dataCheck == null) {
+        if (dataCheck == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay kho can cap nhat"
@@ -160,7 +172,7 @@ export const updateWarehouse = async (req: admin, res: Response) => {
 export const lockWarehouse = async (req: admin, res: Response) => {
     try {
         const { id } = req.params;
-        const { isActive } = req.body 
+        const { isActive } = req.body
         const dataCheck = await Warehouse.findOne({
             where: {
                 id: id,
@@ -168,7 +180,7 @@ export const lockWarehouse = async (req: admin, res: Response) => {
             }
         })
 
-        if(dataCheck == null) {
+        if (dataCheck == null) {
             return res.status(404).json({
                 code: "error",
                 message: "Khong tim thay warehouse"
@@ -180,7 +192,7 @@ export const lockWarehouse = async (req: admin, res: Response) => {
         });
 
         dataCheck.save();
-    
+
         res.json({
             code: "success",
             message: "Khoa warehouse thanh cong"
