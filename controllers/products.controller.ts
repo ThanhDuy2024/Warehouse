@@ -148,6 +148,7 @@ export const getProduct = async (req: admin, res: Response) => {
                 quantity: item.dataValues.quantity,
                 isActive: item.dataValues.isActive,
                 categoryIds: [],
+                price: item.dataValues.price,
                 createdBy: "",
                 updatedBy: "",
                 createdAt: "",
