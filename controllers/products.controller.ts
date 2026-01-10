@@ -130,6 +130,11 @@ export const getProduct = async (req: admin, res: Response) => {
             find.where.isActive = false
         }
 
+        //filter warehouse
+        if(req.query.warehouseId) {
+            find.where.warehouseId = Number(req.query.warehouseId);
+        }
+
         const productList = await Products.findAll(find);
 
         const data: any = []
@@ -199,6 +204,22 @@ export const getProduct = async (req: admin, res: Response) => {
                     }
                 }
             }
+        }
+
+        if(req.query.categoryId) {
+            const newData = [];
+            for (const item of data) {
+                for (const item2 of item.categoryIds) {
+                    if(item2.categoryId === Number(req.query.categoryId)) {
+                        newData.push(item)
+                    }
+                }
+            };
+
+            return res.json({
+                code: "success",
+                data: newData
+            })
         }
 
 
