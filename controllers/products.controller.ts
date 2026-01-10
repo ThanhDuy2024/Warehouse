@@ -130,6 +130,11 @@ export const getProduct = async (req: admin, res: Response) => {
             find.where.isActive = false
         }
 
+        //filter warehouse
+        if(req.query.warehouse) {
+            find.where.warehouseId = Number(req.query.warehouse);
+        }
+
         const productList = await Products.findAll(find);
 
         const data: any = []
