@@ -108,8 +108,7 @@ export const lowStockProduct = async (req: Request, res: Response) => {
             offset: offset,
             limit: limit
         });
-
-
+        
         res.json({
             code: "success",
             data: lowProduct,

@@ -6,6 +6,8 @@ import { Admin } from "../models/admin.model";
 import moment from "moment";
 import { Op } from "sequelize";
 import { limit } from "../configs/variable.config";
+import { CategoriesProducts } from "../models/categoriesProducts.model";
+import { sequelize } from "../configs/database.config";
 
 export const createCategory = async (req: admin, res: Response) => {
     try {
@@ -32,6 +34,36 @@ export const createCategory = async (req: admin, res: Response) => {
 
 export const getCategory = async (req: admin, res: Response) => {
     try {
+        Categories.hasMany(CategoriesProducts, { foreignKey: 'categoryId' });
+        CategoriesProducts.belongsTo(Categories, { foreignKey: 'categoryId' });
+
+        const result = await Categories.findAll({
+            attributes: [
+                ['id', 'categoryId'],
+                [
+                    sequelize.fn('COUNT', sequelize.col('CategoriesProducts.productId')),
+                    'totalStockProdudct'
+                ]
+            ],
+            include: [
+                {
+                    model: CategoriesProducts,
+                    attributes: [],     // không select cột của bảng join
+                    required: false     // LEFT JOIN
+                }
+            ],
+            group: ['Categories.id']
+        });
+
+        const countProductInCategory:any = []
+        if(result) {
+            for (const item of result) {
+                countProductInCategory.push(item.dataValues)
+            }
+        }
+
+
+
         let offset = 0
         const count = await Categories.count();
         const pageQuantity = Math.ceil(Number(count) / limit);
@@ -67,14 +99,21 @@ export const getCategory = async (req: admin, res: Response) => {
 
         const data: Array<object> = []
         for (const item of categories) {
-            const rawData = {
+            const rawData:any = {
                 id: item.dataValues.id,
                 name: item.dataValues.name,
+                description: item.dataValues.description,
                 isActive: item.dataValues.isActive,
                 createdBy: "",
                 updatedBy: "",
                 createdAt: "",
                 updatedAt: ""
+            }
+
+            for (const stock of countProductInCategory) {
+                if(item.dataValues.id === stock.categoryId) {
+                    rawData.totalStockProdudct = stock.totalStockProdudct
+                }
             }
 
             const createdAdmin = await Admin.findOne({
