@@ -15,6 +15,10 @@ export const Categories = sequelize.define("Categories", {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     createdBy: {
         type: DataTypes.INTEGER,
         allowNull: false
