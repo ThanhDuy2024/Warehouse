@@ -3,6 +3,7 @@ import { Products } from "../models/products.model";
 import { sequelize } from "../configs/database.config";
 import { Warehouse } from "../models/warehouse.model";
 import { Op } from "sequelize";
+import { limit } from "../configs/variable.config";
 
 export const totalDashBoard = async (req: Request, res: Response) => {
     try {
@@ -60,7 +61,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
             totalWarehouse: rawData.totalWarehouse,
             totalLowQuantityProduct: rawData.totalLowQuantityProduct
         };
-        
+
         res.json({
             code: "success",
             data: data
@@ -70,6 +71,55 @@ export const totalDashBoard = async (req: Request, res: Response) => {
         res.status(400).json({
             code: "error",
             message: "Loi totalDashboard"
+        })
+    }
+}
+
+export const lowStockProduct = async (req: Request, res: Response) => {
+    try {
+        //pagination
+        const countProduct = await Products.count({
+            where: {
+                quantity: {
+                    [Op.lte]: 100
+                }
+            }
+        });
+        const pageQuantity = Math.ceil(countProduct / limit);
+        let offset = 0;
+
+        if(req.query.page && Number(req.query.page) > 0 && Number(req.query.page) <= pageQuantity) {
+            offset = (Number(req.query.page) - 1) * limit
+        };
+        //end pagination
+        const lowProduct = await Products.findAll({
+            attributes: [
+                "id",
+                "name",
+                "image",
+                "quantity",
+                "isActive"
+            ],
+            where: {
+                quantity: {
+                    [Op.lte]: 100
+                }
+            },
+            offset: offset,
+            limit: limit
+        });
+
+
+        res.json({
+            code: "success",
+            data: lowProduct,
+            pageQuantity: pageQuantity
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            code: "error",
+            message: "Loi low stock product"
         })
     }
 }
