@@ -134,3 +134,77 @@ export const getRole = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const updateRole = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const role = await Roles.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if (!role) {
+            return res.status(404).json({
+                code: "error"
+            })
+        };
+
+        req.body.updatedBy = req.admin.id;
+        req.body.slug = slugify(String(req.body.name), {
+            lower: true
+        });
+
+        const updateRole = await role.update(req.body);
+        await updateRole.save();
+
+        res.json({
+            code: "success",
+            message: "update role success",
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            code: "error",
+            message: "Error backend or frontend!"
+        })
+    }
+}
+
+export const lockRole = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        const role = await Roles.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if (!role) {
+            return res.status(404).json({
+                code: "error"
+            })
+        };
+
+        await role.update({
+            isActive: !isActive
+        });
+
+        await role.save();
+
+        console.log(!isActive)
+        res.json({
+            code: "success",
+            message: "lock role success"
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            code: "error",
+            message: "Error backend or frontend"
+        })
+    }
+}
