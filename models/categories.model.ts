@@ -17,7 +17,7 @@ export const Categories = sequelize.define("Categories", {
     },
     description: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     createdBy: {
         type: DataTypes.INTEGER,
