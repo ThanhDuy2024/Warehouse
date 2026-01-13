@@ -194,8 +194,6 @@ export const lockRole = async (req: admin, res: Response) => {
         });
 
         await role.save();
-
-        console.log(!isActive)
         res.json({
             code: "success",
             message: "lock role success"
