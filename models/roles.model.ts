@@ -22,5 +22,13 @@ export const Roles = sequelize.define("Roles", {
     updatedBy: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    slug: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
 })
