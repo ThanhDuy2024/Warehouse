@@ -9,6 +9,7 @@ import { Admin } from "../models/admin.model";
 import moment from "moment";
 import { Op } from "sequelize";
 import { limit } from "../configs/variable.config";
+import { sequelize } from "../configs/database.config";
 
 export const createProduct = async (req: admin, res: Response) => {
     try {
@@ -97,12 +98,12 @@ export const getProduct = async (req: admin, res: Response) => {
         const count = await Products.count();
         const pageQuantity = Math.ceil(Number(count) / limit);
         const { page } = req.query
-        if(page && Number(page) > 1 && Number(page) <= pageQuantity) {
+        if (page && Number(page) > 1 && Number(page) <= pageQuantity) {
             offset = (Number(page) - 1) * limit
         }
 
 
-        const find:any= {
+        const find: any = {
             include: [{
                 model: Warehouse,
                 attributes: ['id', 'name'],
@@ -117,10 +118,10 @@ export const getProduct = async (req: admin, res: Response) => {
             offset: offset
         }
 
-        find.order.push(['id', 'asc'])
+        find.order.push(['updatedAt', 'desc'])
 
         //find product
-        if(req.query.search && String(req.query.search).trim() !== "") {
+        if (req.query.search && String(req.query.search).trim() !== "") {
             const keyword = slugify(String(req.query.search), {
                 lower: true
             });
@@ -131,19 +132,19 @@ export const getProduct = async (req: admin, res: Response) => {
         };
 
         //sort quantity asc, desc
-        if(req.query.quantity) {
+        if (req.query.quantity) {
             find.order[0] = ['quantity', req.query.quantity]
         }
 
         //filter isActive
-        if(req.query.isActive == "true") {
+        if (req.query.isActive == "true") {
             find.where.isActive = true
-        } else if(req.query.isActive == "false") {
+        } else if (req.query.isActive == "false") {
             find.where.isActive = false
         }
 
         //filter warehouse
-        if(req.query.warehouseId) {
+        if (req.query.warehouseId) {
             find.where.warehouseId = Number(req.query.warehouseId);
         }
         const productList = await Products.findAll(find);
@@ -218,11 +219,11 @@ export const getProduct = async (req: admin, res: Response) => {
             }
         }
 
-        if(req.query.categoryId) {
+        if (req.query.categoryId) {
             const newData = [];
             for (const item of data) {
                 for (const item2 of item.categoryIds) {
-                    if(item2.categoryId === Number(req.query.categoryId)) {
+                    if (item2.categoryId === Number(req.query.categoryId)) {
                         newData.push(item)
                     }
                 }
@@ -235,11 +236,19 @@ export const getProduct = async (req: admin, res: Response) => {
             })
         }
 
+        const totalProduct = await Products.count();
+        const totalPrice:any = await Products.findOne({
+            attributes: [
+                [sequelize.fn("SUM", sequelize.col("price")), "totalPrice"]
+            ],
+        });
 
         res.json({
             code: "success",
             data: data,
-            pageQuantity: pageQuantity
+            pageQuantity: pageQuantity,
+            totalProduct: totalProduct || 0,
+            totalPrice: totalPrice.dataValues.totalPrice || 0
         })
     } catch (error) {
         console.log(error)
