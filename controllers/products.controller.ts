@@ -397,3 +397,41 @@ export const lockProduct = async (req: admin, res: Response) => {
         })
     }
 }
+
+export const orderMore = async (req: admin, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { quantity } = req.body;
+
+        const lowProduct = await Products.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        if(!lowProduct) {
+            return res.status(404).json({
+                code: "error",
+                message: "Khong tim thay hang"
+            });
+        };
+
+        await lowProduct.update({
+            quantity: lowProduct.dataValues.quantity + Number(quantity),
+            updatedBy: req.admin.id
+        });
+
+        await lowProduct.save();
+
+        res.json({
+            code: "success",
+            message: "Nhap hang thanh cong"
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            code: "error",
+            message: "Error backend or frontend"
+        })
+    }
+}
