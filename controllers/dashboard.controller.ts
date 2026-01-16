@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import { Products } from "../models/products.model";
 import { sequelize } from "../configs/database.config";
 import { Warehouse } from "../models/warehouse.model";
-import { Op } from "sequelize";
+import { Op, where, col } from "sequelize";
 import { limit } from "../configs/variable.config";
 
 export const totalDashBoard = async (req: Request, res: Response) => {
     try {
-        const rawData:any = {}
+        const rawData: any = {}
 
         //total price in all warehouse
         const totalPriceValue = await Products.findOne({
@@ -17,7 +17,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
             raw: true
         });
 
-        if(totalPriceValue) {
+        if (totalPriceValue) {
             rawData.totalInventoryValue = totalPriceValue
         } else {
             rawData.totalInventoryValue = {
@@ -26,6 +26,10 @@ export const totalDashBoard = async (req: Request, res: Response) => {
         }
         //end total price in all warehouse
 
+        //total product
+        const totalProduct = await Products.count();
+        //total product
+
         //total active warehouse
         const totalWarehouse = await Warehouse.count({
             where: {
@@ -33,7 +37,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
             }
         });
 
-        if(totalWarehouse) {
+        if (totalWarehouse) {
             rawData.totalWarehouse = totalWarehouse
         } else {
             rawData.totalWarehouse = 0
@@ -49,17 +53,18 @@ export const totalDashBoard = async (req: Request, res: Response) => {
             }
         });
 
-        if(lowQuantityProduct) {
+        if (lowQuantityProduct) {
             rawData.totalLowQuantityProduct = lowQuantityProduct
         } else {
             rawData.totalLowQuantityProduct = 0
         }
         //end low quantity product
 
-        const data:any = {
+        const data: any = {
             totalInventoryValue: Number(rawData.totalInventoryValue.totalInventoryValue),
             totalWarehouse: rawData.totalWarehouse,
-            totalLowQuantityProduct: rawData.totalLowQuantityProduct
+            totalLowQuantityProduct: rawData.totalLowQuantityProduct,
+            totalProduct: totalProduct || 0
         };
 
         res.json({
@@ -88,7 +93,7 @@ export const lowStockProduct = async (req: Request, res: Response) => {
         const pageQuantity = Math.ceil(countProduct / limit);
         let offset = 0;
 
-        if(req.query.page && Number(req.query.page) > 0 && Number(req.query.page) <= pageQuantity) {
+        if (req.query.page && Number(req.query.page) > 0 && Number(req.query.page) <= pageQuantity) {
             offset = (Number(req.query.page) - 1) * limit
         };
         //end pagination
@@ -98,17 +103,18 @@ export const lowStockProduct = async (req: Request, res: Response) => {
                 "name",
                 "image",
                 "quantity",
-                "isActive"
+                "threshold",
+                "isActive",
             ],
-            where: {
-                quantity: {
-                    [Op.lte]: 100
-                }
-            },
+            where: where(
+                col('threshold'),
+                Op.gt,
+                col('quantity')
+            ),
             offset: offset,
             limit: limit
         });
-        
+
         res.json({
             code: "success",
             data: lowProduct,
