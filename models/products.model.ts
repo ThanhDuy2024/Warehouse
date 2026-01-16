@@ -42,5 +42,9 @@ export const Products = sequelize.define("Products", {
     slug: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    threshold: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 })
