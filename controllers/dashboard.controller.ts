@@ -48,7 +48,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
         const lowQuantityProduct = await Products.count({
             where: {
                 quantity: {
-                    [Op.lte]: 100
+                    [Op.lt]: col('threshold')
                 }
             }
         });
