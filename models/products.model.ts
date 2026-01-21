@@ -2,49 +2,52 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../configs/database.config";
 
 export const Products = sequelize.define("Products", {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    image: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    warehouseId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    price: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    isActive: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
-    },
-    createdBy: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    updatedBy: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    slug: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    threshold: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    }
-})
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  name: DataTypes.STRING,
+  image: DataTypes.STRING,
+  warehouseId: DataTypes.INTEGER,
+  quantity: DataTypes.INTEGER,
+  price: DataTypes.INTEGER,
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  createdBy: DataTypes.INTEGER,
+  updatedBy: DataTypes.INTEGER,
+  slug: DataTypes.STRING,
+
+  daily_demand: {
+    type: DataTypes.INTEGER,
+    defaultValue: 10
+  },
+  lead_time: {
+    type: DataTypes.INTEGER,
+    defaultValue: 5
+  },
+  safety_stock: {
+    type: DataTypes.INTEGER,
+    defaultValue: 20
+  },
+
+  reorder_point: {
+    type: DataTypes.INTEGER
+  }
+}, {
+  timestamps: true
+});
+
+Products.beforeCreate((product:any) => {
+  product.reorder_point =
+    product.daily_demand * product.lead_time +
+    product.safety_stock;
+});
+
+Products.beforeUpdate((product:any) => {
+  product.reorder_point =
+    product.daily_demand * product.lead_time +
+    product.safety_stock;
+});
