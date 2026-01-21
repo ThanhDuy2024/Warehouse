@@ -161,7 +161,7 @@ export const getProduct = async (req: admin, res: Response) => {
                 isActive: item.dataValues.isActive,
                 categoryIds: [],
                 price: item.dataValues.price,
-                threshold: item.dataValues.threshold || 0,
+                threshold: item.dataValues.reorder_point || 0,
                 createdBy: "",
                 updatedBy: "",
                 createdAt: "",

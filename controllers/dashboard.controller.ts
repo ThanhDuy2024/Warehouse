@@ -12,7 +12,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
         //total price in all warehouse
         const totalPriceValue = await Products.findOne({
             attributes: [
-                [sequelize.fn('SUM', sequelize.literal('Quantity * price')), 'totalInventoryValue']
+                [sequelize.fn('SUM', sequelize.literal('quantity * price')), 'totalInventoryValue']
             ],
             raw: true
         });
@@ -24,6 +24,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
                 totalInventoryValue: 0
             }
         }
+
         //end total price in all warehouse
 
         //total product
@@ -48,7 +49,7 @@ export const totalDashBoard = async (req: Request, res: Response) => {
         const lowQuantityProduct = await Products.count({
             where: {
                 quantity: {
-                    [Op.lt]: col('threshold')
+                    [Op.lt]: col('reorder_point')
                 }
             }
         });
@@ -86,7 +87,7 @@ export const lowStockProduct = async (req: Request, res: Response) => {
         const countProduct = await Products.count({
             where: {
                 quantity: {
-                    [Op.lte]: 100
+                    [Op.lte]: col("reorder_point")
                 }
             }
         });
@@ -103,11 +104,11 @@ export const lowStockProduct = async (req: Request, res: Response) => {
                 "name",
                 "image",
                 "quantity",
-                "threshold",
+                ['reorder_point', 'threshold'],
                 "isActive",
             ],
             where: where(
-                col('threshold'),
+                col('reorder_point'),
                 Op.gt,
                 col('quantity')
             ),
